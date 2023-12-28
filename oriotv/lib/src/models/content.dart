@@ -1,18 +1,20 @@
 class Media {
-  int tmdbId;
+  int? tmdbId;
   String? title;
   String? description;
   String? posterUrl;
-  String type;
+  String? backdropUrl; // Add this line
+  String? type;
   List<Season>? seasons;
   List<Episode>? episodes;
 
   Media({
-    required this.tmdbId,
+    this.tmdbId,
     this.title,
     this.description,
     this.posterUrl,
-    required this.type,
+    this.backdropUrl, // Add this line
+    this.type,
     this.seasons,
     this.episodes,
   });
@@ -23,6 +25,7 @@ class Media {
       title: json['title'],
       description: json['description'],
       posterUrl: json['poster_url'],
+      backdropUrl: json['backdrop_url'], // Add this line
       type: json['type'],
       seasons: json['seasons'] != null
           ? List<Season>.from(
@@ -41,6 +44,7 @@ class Media {
       'title': title,
       'description': description,
       'posterUrl': posterUrl,
+      'backdropUrl': backdropUrl, // Add this line
       'type': type,
       'seasons': seasons?.map((season) => season.toJson()).toList(),
       'episodes': episodes?.map((episode) => episode.toJson()).toList(),

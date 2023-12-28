@@ -15,12 +15,11 @@ class ContentCard extends StatelessWidget {
         children: [
           Expanded(
             child: SizedBox(
-              width: 150.0,
-              height: 150.0,
+              width: 130.0,
+              height: 300.0,
               child: Container(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(
-                      8.0), // Ajusta el valor según tus preferencias
+                  borderRadius: BorderRadius.circular(8.0),
                   image: DecorationImage(
                     image: NetworkImage(media.posterUrl ?? ''),
                     fit: BoxFit.cover,

@@ -9,7 +9,6 @@ void main() async {
   try {
     data = await loadData();
   } catch (e) {
-    // Manejar errores de carga de datos
     print('Error al cargar datos: $e');
     return;
   }

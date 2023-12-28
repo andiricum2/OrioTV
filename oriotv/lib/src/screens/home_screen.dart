@@ -2,72 +2,125 @@ import 'package:flutter/material.dart';
 import 'package:oriotv/src/models/content.dart';
 import 'package:oriotv/src/widgets/content_card.dart';
 import 'package:oriotv/src/services/tmdb_service.dart';
+import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic> data;
 
-  const HomeScreen({super.key, required this.data});
+  const HomeScreen({Key? key, required this.data}) : super(key: key);
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final TmdbService tmdbService = TmdbService();
   late List<Media> movies;
   late List<Media> series;
-  final TmdbService tmdbService = TmdbService();
+  late PageController _pageController;
 
   @override
   void initState() {
     super.initState();
-    // Inicializar la lista de películas y series (puedes hacer lo mismo para otras categorías)
-    movies = _createMediaList(widget.data['movies']);
-    series = _createMediaList(widget.data['series']);
 
-    // Cargar detalles de TMDb para cada película y serie
-    _loadTmdbDetails(movies);
-    _loadTmdbDetails(series);
+    movies = (widget.data['movies'] as List<dynamic>?)
+            ?.map((e) => Media.fromJson(e))
+            .toList() ??
+        [];
+
+    series = (widget.data['series'] as List<dynamic>?)
+            ?.map((e) => Media.fromJson(e))
+            .toList() ??
+        [];
+
+    _initializeMediaLists();
+    _pageController = PageController(viewportFraction: 0.8);
   }
 
-  List<Media> _createMediaList(List<dynamic>? mediaData) {
-    return (mediaData)?.map((e) => Media.fromJson(e)).toList() ?? [];
+  Future<void> _initializeMediaLists() async {
+    await _loadTmdbDetails(movies);
+    await _loadTmdbDetails(series);
   }
 
   Future<void> _loadTmdbDetails(List<Media> mediaList) async {
     for (Media media in mediaList) {
       try {
         Map<String, dynamic> tmdbDetails = await tmdbService.getMediaDetails(
-            media.tmdbId,
-            media
-                .type); // Asegúrate de modificar getMediaDetails en tu TmdbService para manejar películas y series
+          media.tmdbId ?? 0,
+          media.type ?? "other",
+        );
 
-        // Actualizar el objeto 'media' con los detalles de TMDb según sea necesario
         setState(() {
-          // Ejemplo de actualización del título y descripción
-          media.title = tmdbDetails['title'];
+          media.title = tmdbDetails['title'] ?? tmdbDetails['name'];
           media.description = tmdbDetails['overview'];
-
-          // Obtener la URL de la imagen
-          media.posterUrl =
-              tmdbService.getImageUrl(tmdbDetails['poster_path']);
+          media.posterUrl = tmdbService.getImageUrl(tmdbDetails['poster_path']);
+          media.backdropUrl =
+              tmdbService.getBackdropUrl(tmdbDetails['backdrop_path']);
         });
       } catch (e) {
-        print('Error al cargar detalles de TMDb: $e');
+        print('Error loading TMDb details: $e');
       }
-        }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('OrioTV'),
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildCarousel(),
+            _buildSection("Películas", movies),
+            _buildSection("Series", series),
+          ],
+        ),
       ),
-      body: ListView(
+    );
+  }
+
+  Widget _buildCarousel() {
+    return Container(
+      height: 250,
+      child: PageView.builder(
+        controller: _pageController,
+        itemCount: movies.length + series.length,
+        itemBuilder: (context, index) {
+          final media = index < movies.length
+              ? movies[index]
+              : series[index - movies.length];
+          return _buildCarouselItem(media);
+        },
+      ),
+    );
+  }
+
+  Widget _buildCarouselItem(Media media) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          _buildSection("Películas", movies),
-          _buildSection("Series", series),
-          // Puedes agregar más secciones para otras categorías (series, documentales, etc.)
+          Container(
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.0),
+              image: DecorationImage(
+                image: NetworkImage(media.backdropUrl ?? ''),
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          SizedBox(height: 10),
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              media.title ?? '',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          )
         ],
       ),
     );
@@ -92,9 +145,8 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: contentList.length,
-            itemBuilder: (context, index) {
-              return ContentCard(media: contentList[index]);
-            },
+            itemBuilder: (context, index) =>
+                ContentCard(media: contentList[index]),
           ),
         ),
       ],
