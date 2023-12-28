@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:oriotv/src/models/content.dart';
 import 'package:oriotv/src/widgets/content_card.dart';
+import 'package:oriotv/src/widgets/carousel_widget.dart';
 import 'package:oriotv/src/services/tmdb_service.dart';
+import 'package:oriotv/src/widgets/menu_widget.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -23,19 +25,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
-    movies = (widget.data['movies'] as List<dynamic>?)
-            ?.map((e) => Media.fromJson(e))
-            .toList() ??
-        [];
-
-    series = (widget.data['series'] as List<dynamic>?)
-            ?.map((e) => Media.fromJson(e))
-            .toList() ??
-        [];
-
+    movies = _parseMediaList(widget.data['movies']);
+    series = _parseMediaList(widget.data['series']);
     _initializeMediaLists();
     _pageController = PageController(viewportFraction: 0.8);
   }
+
+  List<Media> _parseMediaList(List<dynamic>? mediaData) =>
+      mediaData?.map((e) => Media.fromJson(e)).toList() ?? [];
 
   Future<void> _initializeMediaLists() async {
     await _loadTmdbDetails(movies);
@@ -65,63 +62,47 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isPortrait =
+        MediaQuery.of(context).orientation == Orientation.portrait;
+    final isHorizontal =
+        MediaQuery.of(context).size.width > MediaQuery.of(context).size.height;
+
     return Scaffold(
+      appBar: AppBar(
+        title: Text('Tu aplicación'),
+        automaticallyImplyLeading: isPortrait,
+      ),
+      drawer: isPortrait ? null : MenuWidget(isPortrait: isPortrait),
+      bottomNavigationBar:
+          isPortrait ? MenuWidget(isPortrait: isPortrait) : null,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildCarousel(),
-            _buildSection("Películas", movies),
-            _buildSection("Series", series),
-          ],
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            return Row(
+              children: [
+                if (isHorizontal)
+                  MenuWidget(
+                      isPortrait:
+                          isPortrait), // Agrega el menú en pantallas horizontales
+                Expanded(
+                  child: Column(
+                    children: [
+                      Container(
+                        child: CarouselCard(
+                          pageController: _pageController,
+                          movies: movies,
+                          series: series,
+                        ),
+                      ),
+                      _buildSection("Películas", movies),
+                      _buildSection("Series", series),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         ),
-      ),
-    );
-  }
-
-  Widget _buildCarousel() {
-    return Container(
-      height: 250,
-      child: PageView.builder(
-        controller: _pageController,
-        itemCount: movies.length + series.length,
-        itemBuilder: (context, index) {
-          final media = index < movies.length
-              ? movies[index]
-              : series[index - movies.length];
-          return _buildCarouselItem(media);
-        },
-      ),
-    );
-  }
-
-  Widget _buildCarouselItem(Media media) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            height: 200,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12.0),
-              image: DecorationImage(
-                image: NetworkImage(media.backdropUrl ?? ''),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
-          SizedBox(height: 10),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(
-              media.title ?? '',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          )
-        ],
       ),
     );
   }
