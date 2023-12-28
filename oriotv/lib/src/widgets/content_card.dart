@@ -4,7 +4,7 @@ import 'package:oriotv/src/models/content.dart';
 class ContentCard extends StatelessWidget {
   final Media media;
 
-  ContentCard({required this.media});
+  const ContentCard({super.key, required this.media});
 
   @override
   Widget build(BuildContext context) {

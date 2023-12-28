@@ -8,8 +8,13 @@ class TmdbService {
 
   Future<Map<String, dynamic>> getMediaDetails(
       int tmdbId, String mediaType) async {
+    if (mediaType == "series") {
+      mediaType = "tv";
+    }
+    final MediaDetailsUrl = '$_baseUrl/$mediaType/$tmdbId?api_key=$_apiKey';
+    print(MediaDetailsUrl);
     final response = await http.get(
-      Uri.parse('$_baseUrl/$mediaType/$tmdbId?api_key=$_apiKey'),
+      Uri.parse(MediaDetailsUrl),
     );
 
     if (response.statusCode == 200) {

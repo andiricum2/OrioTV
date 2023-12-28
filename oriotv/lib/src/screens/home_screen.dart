@@ -6,7 +6,7 @@ import 'package:oriotv/src/services/tmdb_service.dart';
 class HomeScreen extends StatefulWidget {
   final Map<String, dynamic> data;
 
-  HomeScreen({required this.data});
+  const HomeScreen({super.key, required this.data});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
@@ -30,40 +30,38 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   List<Media> _createMediaList(List<dynamic>? mediaData) {
-    return (mediaData as List?)?.map((e) => Media.fromJson(e)).toList() ?? [];
+    return (mediaData)?.map((e) => Media.fromJson(e)).toList() ?? [];
   }
 
   Future<void> _loadTmdbDetails(List<Media> mediaList) async {
     for (Media media in mediaList) {
-      if (media.tmdbId != null) {
-        try {
-          Map<String, dynamic> tmdbDetails = await tmdbService.getMediaDetails(
-              media.tmdbId!,
-              media
-                  .type); // Asegúrate de modificar getMediaDetails en tu TmdbService para manejar películas y series
+      try {
+        Map<String, dynamic> tmdbDetails = await tmdbService.getMediaDetails(
+            media.tmdbId,
+            media
+                .type); // Asegúrate de modificar getMediaDetails en tu TmdbService para manejar películas y series
 
-          // Actualizar el objeto 'media' con los detalles de TMDb según sea necesario
-          setState(() {
-            // Ejemplo de actualización del título y descripción
-            media.title = tmdbDetails['title'];
-            media.description = tmdbDetails['overview'];
+        // Actualizar el objeto 'media' con los detalles de TMDb según sea necesario
+        setState(() {
+          // Ejemplo de actualización del título y descripción
+          media.title = tmdbDetails['title'];
+          media.description = tmdbDetails['overview'];
 
-            // Obtener la URL de la imagen
-            media.posterUrl =
-                tmdbService.getImageUrl(tmdbDetails['poster_path']);
-          });
-        } catch (e) {
-          print('Error al cargar detalles de TMDb: $e');
-        }
+          // Obtener la URL de la imagen
+          media.posterUrl =
+              tmdbService.getImageUrl(tmdbDetails['poster_path']);
+        });
+      } catch (e) {
+        print('Error al cargar detalles de TMDb: $e');
       }
-    }
+        }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('OrioTV'),
+        title: const Text('OrioTV'),
       ),
       body: ListView(
         children: [
@@ -83,13 +81,13 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.all(8.0),
           child: Text(
             title,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        Container(
+        SizedBox(
           height: 200,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,

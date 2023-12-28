@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:oriotv/src/screens/home_screen.dart';
 import 'package:oriotv/src/data_loader.dart';
@@ -21,7 +20,7 @@ void main() async {
 class MyApp extends StatelessWidget {
   final Map<String, dynamic> data;
 
-  MyApp({required this.data});
+  const MyApp({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) {
