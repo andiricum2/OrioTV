@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:oriotv/src/models/content.dart';
 import 'package:oriotv/src/widgets/content_card.dart';
+import 'package:oriotv/src/widgets/featured_card.dart';
 import 'package:oriotv/src/widgets/carousel_widget.dart';
 import 'package:oriotv/src/services/tmdb_service.dart';
 import 'package:oriotv/src/widgets/menu_widget.dart';
+import 'package:oriotv/src/screens/detail_screen.dart';
 import 'dart:async';
 
 class HomeScreen extends StatefulWidget {
@@ -50,9 +52,12 @@ class _HomeScreenState extends State<HomeScreen> {
         setState(() {
           media.title = tmdbDetails['title'] ?? tmdbDetails['name'];
           media.description = tmdbDetails['overview'];
-          media.posterUrl = tmdbService.getImageUrl(tmdbDetails['poster_path']);
+          media.posterUrl =
+              tmdbService.getImageUrl(tmdbDetails['poster_path'], "w400");
           media.backdropUrl =
-              tmdbService.getBackdropUrl(tmdbDetails['backdrop_path']);
+              tmdbService.getBackdropUrl(tmdbDetails['backdrop_path'], "w1280");
+          media.popularity = tmdbDetails['popularity'];
+          media.releaseDate = tmdbDetails['first_air_date'];
         });
       } catch (e) {
         print('Error loading TMDb details: $e');
@@ -62,47 +67,67 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final isPortrait =
-        MediaQuery.of(context).orientation == Orientation.portrait;
     final isHorizontal =
         MediaQuery.of(context).size.width > MediaQuery.of(context).size.height;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tu aplicación'),
-        automaticallyImplyLeading: isPortrait,
-      ),
-      drawer: isPortrait ? null : MenuWidget(isPortrait: isPortrait),
-      bottomNavigationBar:
-          isPortrait ? MenuWidget(isPortrait: isPortrait) : null,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (context, constraints) {
-            return Row(
-              children: [
-                if (isHorizontal)
-                  MenuWidget(
-                      isPortrait:
-                          isPortrait), // Agrega el menú en pantallas horizontales
-                Expanded(
-                  child: Column(
-                    children: [
-                      Container(
-                        child: CarouselCard(
-                          pageController: _pageController,
-                          movies: movies,
-                          series: series,
-                        ),
-                      ),
-                      _buildSection("Películas", movies),
-                      _buildSection("Series", series),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
+        title: const Row(
+          children: [
+            Icon(Icons.tv), // Añade un icono de televisión
+            SizedBox(width: 8.0), // Ajusta el espaciado según sea necesario
+            Text('OrioTV'),
+          ],
         ),
+        automaticallyImplyLeading: !isHorizontal,
+      ),
+      drawer: isHorizontal ? MenuWidget() : null,
+      bottomNavigationBar: isHorizontal ? null : MenuWidget(),
+      body: SafeArea(
+        child: isHorizontal ? _buildHorizontalLayout() : _buildVerticalLayout(),
+      ),
+    );
+  }
+
+  Widget _buildHorizontalLayout() {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Row(
+          children: [
+            MenuWidget(),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    FeaturedCard(
+                      pageController: _pageController,
+                      featuredContent: movies + series,
+                      onTap: (media) => _openDetailScreen(media),
+                    ),
+                    _buildSection("Películas", movies),
+                    _buildSection("Series", series),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildVerticalLayout() {
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          CarouselCard(
+            pageController: _pageController,
+            carouselContent: movies + series,
+            onTap: (media) => _openDetailScreen(media),
+          ),
+          _buildSection("Películas", movies),
+          _buildSection("Series", series),
+        ],
       ),
     );
   }
@@ -126,11 +151,25 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             itemCount: contentList.length,
-            itemBuilder: (context, index) =>
-                ContentCard(media: contentList[index]),
+            itemBuilder: (context, index) {
+              return ContentCard(
+                media: contentList[index],
+                onTap: (media) => _openDetailScreen(media),
+              );
+            },
           ),
         ),
       ],
+    );
+  }
+
+  void _openDetailScreen(Media media) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            DetailScreen(media: media, tmdbService: tmdbService),
+      ),
     );
   }
 }

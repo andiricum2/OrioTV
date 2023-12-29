@@ -3,8 +3,10 @@ import 'package:oriotv/src/models/content.dart';
 
 class ContentCard extends StatelessWidget {
   final Media media;
+  final Function(Media) onTap;
 
-  const ContentCard({super.key, required this.media});
+  const ContentCard({Key? key, required this.media, required this.onTap})
+      : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -17,12 +19,15 @@ class ContentCard extends StatelessWidget {
             child: SizedBox(
               width: 130.0,
               height: 300.0,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8.0),
-                  image: DecorationImage(
-                    image: NetworkImage(media.posterUrl ?? ''),
-                    fit: BoxFit.cover,
+              child: GestureDetector(
+                onTap: () => onTap(media),
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8.0),
+                    image: DecorationImage(
+                      image: NetworkImage(media.posterUrl ?? ''),
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
               ),

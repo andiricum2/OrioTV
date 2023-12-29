@@ -1,45 +1,47 @@
 import 'package:flutter/material.dart';
 
 class MenuWidget extends StatelessWidget {
-  final bool isPortrait;
-
-  MenuWidget({
-    required this.isPortrait,
-  });
-
   @override
   Widget build(BuildContext context) {
-    return isPortrait
-        ? BottomNavigationBar(
-            items: [
-              _buildBottomNavigationBarItem(Icons.home, 'Inicio'),
-              _buildBottomNavigationBarItem(Icons.search, 'Buscar'),
-              // Agrega más ítems según sea necesario
-            ],
-            onTap: (index) {
-              if (index == 0) {
-                _onHomeTap(context);
-              } else if (index == 1) {
-                _onSearchTap(context);
-              }
-            },
-          )
-        : Container(
-            width: 250,
-            child: Drawer(
-              child: ListView(
-                children: [
-                  _buildDrawerItem('Inicio', () {
-                    _onHomeTap(context);
-                  }),
-                  _buildDrawerItem('Buscar', () {
-                    _onSearchTap(context);
-                  }),
-                  // Agrega más opciones según sea necesario
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // Verifica el ancho de la pantalla para decidir el diseño del menú
+        bool isHorizontal = constraints.maxWidth > 600;
+        double screenWidth = MediaQuery.of(context).size.width;
+
+        return isHorizontal
+            ? SizedBox(
+                width: screenWidth / 8,
+                child: Drawer(
+                  child: ListView(
+                    children: [
+                      _buildDrawerItem('Inicio', () {
+                        _onHomeTap(context);
+                      }),
+                      _buildDrawerItem('Buscar', () {
+                        _onSearchTap(context);
+                      }),
+                      // Agrega más opciones según sea necesario
+                    ],
+                  ),
+                ),
+              )
+            : BottomNavigationBar(
+                items: [
+                  _buildBottomNavigationBarItem(Icons.home, 'Inicio'),
+                  _buildBottomNavigationBarItem(Icons.search, 'Buscar'),
+                  // Agrega más ítems según sea necesario
                 ],
-              ),
-            ),
-          );
+                onTap: (index) {
+                  if (index == 0) {
+                    _onHomeTap(context);
+                  } else if (index == 1) {
+                    _onSearchTap(context);
+                  }
+                },
+              );
+      },
+    );
   }
 
   Widget _buildDrawerItem(String title, VoidCallback onTap) {

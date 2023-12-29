@@ -7,6 +7,10 @@ class Media {
   String? type;
   List<Season>? seasons;
   List<Episode>? episodes;
+  String? releaseDate;
+  double? popularity;
+  String? genre;
+  String? magnet;
 
   Media({
     this.tmdbId,
@@ -17,6 +21,10 @@ class Media {
     this.type,
     this.seasons,
     this.episodes,
+    this.releaseDate,
+    this.popularity,
+    this.genre,
+    this.magnet,
   });
 
   factory Media.fromJson(Map<String, dynamic> json) {
@@ -27,6 +35,10 @@ class Media {
       posterUrl: json['poster_url'],
       backdropUrl: json['backdrop_url'], // Add this line
       type: json['type'],
+      releaseDate: json['releaseDate'],
+      popularity: json['popularity'],
+      genre: json['genre'],
+      magnet: json['magnet'],
       seasons: json['seasons'] != null
           ? List<Season>.from(
               json['seasons'].map((season) => Season.fromJson(season)))
@@ -46,6 +58,8 @@ class Media {
       'posterUrl': posterUrl,
       'backdropUrl': backdropUrl, // Add this line
       'type': type,
+      'releaseDate': releaseDate,
+      'popularity': popularity,
       'seasons': seasons?.map((season) => season.toJson()).toList(),
       'episodes': episodes?.map((episode) => episode.toJson()).toList(),
     };
