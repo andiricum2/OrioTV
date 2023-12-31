@@ -10,7 +10,7 @@ class Media {
   String? releaseDate;
   double? popularity;
   String? genre;
-  String? magnet;
+  String? url;
 
   Media({
     this.tmdbId,
@@ -24,7 +24,7 @@ class Media {
     this.releaseDate,
     this.popularity,
     this.genre,
-    this.magnet,
+    this.url,
   });
 
   factory Media.fromJson(Map<String, dynamic> json) {
@@ -38,7 +38,7 @@ class Media {
       releaseDate: json['releaseDate'],
       popularity: json['popularity'],
       genre: json['genre'],
-      magnet: json['magnet'],
+      url: json['url'],
       seasons: json['seasons'] != null
           ? List<Season>.from(
               json['seasons'].map((season) => Season.fromJson(season)))

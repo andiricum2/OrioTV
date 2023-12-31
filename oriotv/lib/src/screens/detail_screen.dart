@@ -112,7 +112,7 @@ class DetailScreen extends StatelessWidget {
         _buildMovieInfoText(
             'Descripción', media.description ?? 'Sin descripción disponible'),
         SizedBox(height: 16.0),
-        _buildPlayButton(context),
+        _buildPlayButton(context, media),
       ],
     );
   }
@@ -161,7 +161,7 @@ class DetailScreen extends StatelessWidget {
               _buildMovieInfoText('Descripción',
                   media.description ?? 'Sin descripción disponible'),
               SizedBox(height: 16.0),
-              _buildPlayButton(context),
+              _buildPlayButton(context, media),
             ],
           ),
         ),
@@ -228,12 +228,16 @@ class DetailScreen extends StatelessWidget {
     );
   }
 
-  Widget _buildPlayButton(BuildContext context) {
+  Widget _buildPlayButton(BuildContext context, Media media) {
     return ElevatedButton.icon(
       onPressed: () async {
-        //TODO: START WITH TORRENT AND MAGNET DOWNLOAD
-        await TorrentDownloader()
-            .downloadTorrent(magnetLink: media.magnet ?? "");
+        // Navigate to the WebView screen and pass the Media object
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => MyWebViewScreen(media: media),
+          ),
+        );
       },
       icon: Icon(Icons.play_arrow, size: 24.0),
       label: Text('Reproducir'),
